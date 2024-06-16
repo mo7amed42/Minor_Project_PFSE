@@ -1,27 +1,74 @@
-import streamlit as st
-from app_module import calculate_beam_deflection
-import matplotlib.pyplot as plt
 import numpy as np
+from PyNite import FEModel3D, Visualization
 
-st.title("Beam Deflection Calculator")
+def create_beam(length, load, load_position):
+    """
+    Create a simply supported beam with a point load.
 
-# User inputs
-length = st.number_input("Beam Length (m)", min_value=1.0, value=10.0)
-load = st.number_input("Uniform Load (N/m)", min_value=1.0, value=5000.0)
-youngs_modulus = st.number_input("Young's Modulus (Pa)", min_value=1e9, value=210e9)
-moment_of_inertia = st.number_input("Moment of Inertia (m^4)", min_value=1e-6, value=0.0001)
+    Parameters:
+    length (float): The length of the beam.
+    load (float): The magnitude of the point load.
+    load_position (float): The position of the point load from the left end of the beam.
 
-if st.button("Calculate Deflection"):
-    deflections = calculate_beam_deflection(length, load, youngs_modulus, moment_of_inertia)
+    Returns:
+    model (FEModel3D): The finite element model of the beam.
+    """
+
+    # Define material properties and section properties
+    E = 210e9      # Young's modulus in Pascals (N/m^2)
+    nu = 0.3       # Poisson's ratio
+    rho = 7850     # Density in kg/m^3 (common value for steel)
+    G = E / (2 * (1 + nu))  # Shear modulus in Pascals (N/m^2)
+    Iy = 100e-6    # Moment of inertia about the y-axis in m^4
+    Iz = 100e-6    # Moment of inertia about the z-axis in m^4
+    J = 0.1e-6     # Torsional constant in m^4
+    A = 1e-4       # Cross-sectional area in m^2
+
+    # Create a new finite element model
+    model = FEModel3D()
+
+    # Add a material to the model
+    model.add_material("Steel", E, G, nu, rho)
     
-    st.write(f"Deflections at supports: {deflections}")
+    # Add nodes (supports)
+    model.add_node('N1', 0, 0, 0)
+    model.add_node('N2', length, 0, 0)
+
+    # Add a beam element between the nodes
+    model.add_member('M1', 'N1', 'N2', "Steel", Iy, Iz, J, A)
+  
+    # Add supports (simply supported)
+    model.def_support('N1', True, True, True, False, False, False)
+    model.def_support('N2', True, True, True, False, False, False)
     
-    # Visualization
-    fig, ax = plt.subplots()
-    x = np.linspace(0, length, 100)
-    y = np.interp(x, [0, length], deflections)
-    ax.plot(x, y)
-    ax.set_title('Beam Deflection Curve')
-    ax.set_xlabel('Length (m)')
-    ax.set_ylabel('Deflection (m)')
-    st.pyplot(fig)
+    # Add a point load at the specified position
+    model.add_member_pt_load('M1', 'Fy', load, load_position)
+
+    # Analyze the model
+    model.analyze()
+
+    return model
+
+def plot_bending_moment(model):
+    """
+    Plot the bending moment diagram of the beam.
+
+    Parameters:
+    model (FEModel3D): The finite element model of the beam.
+    """
+    Visualization.RenderModel(model, deformed_shape=True, deformed_scale=100, render_loads=True)
+
+# Add unit tests using pytest
+#def test_create_beam():
+#    length = 10  # Example length in meters
+#    load = 1000  # Example load in Newtons
+#    load_position = 5  # Example load position in meters from the left support
+
+#    model = create_beam(length, load, load_position)
+    
+ #   assert len(model.Nodes) == 2
+ #   assert len(model.Members) == 1
+ #   assert model.Nodes['N1'].X == 0
+ #   assert model.Nodes['N2'].X == length
+
+# You can add more tests to check for the correct reactions, displacements, etc.
