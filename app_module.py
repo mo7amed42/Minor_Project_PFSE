@@ -1,5 +1,5 @@
 # app_module.py
-
+import matplotlib.pyplot as plt
 import streamlit as st
 from app import create_beam, plot_bending_moment
 
