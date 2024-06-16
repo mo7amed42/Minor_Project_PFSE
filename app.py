@@ -1,5 +1,6 @@
 import numpy as np
-from PyNite import FEModel3D, Visualization
+import matplotlib.pyplot as plt
+from PyNite import FEModel3D
 
 def create_beam(length, load, load_position):
     """
@@ -13,12 +14,13 @@ def create_beam(length, load, load_position):
     Returns:
     model (FEModel3D): The finite element model of the beam.
     """
-    # Ensure inputs are numeric
-    length = float(length)
-    load = float(load)
-    load_position = float(load_position)
-    
-    # Define material properties and section properties
+
+
+
+    # Create a new finite element model
+    model = FEModel3D()
+
+        # Define material properties and section properties
     E = 210e9      # Young's modulus in Pascals (N/m^2)
     nu = 0.3       # Poisson's ratio
     rho = 7850     # Density in kg/m^3 (common value for steel)
@@ -27,11 +29,7 @@ def create_beam(length, load, load_position):
     Iz = 100e-6    # Moment of inertia about the z-axis in m^4
     J = 0.1e-6     # Torsional constant in m^4
     A = 1e-4       # Cross-sectional area in m^2
-
-    # Create a new finite element model
-    model = FEModel3D()
-
-    # Add a material to the model
+    
     model.add_material("Steel", E, G, nu, rho)
     
     # Add nodes (supports)
@@ -40,39 +38,45 @@ def create_beam(length, load, load_position):
 
     # Add a beam element between the nodes
     model.add_member('M1', 'N1', 'N2', "Steel", Iy, Iz, J, A)
-  
+
+    
     # Add supports (simply supported)
-    model.def_support('N1', True, True, True, False, False, False)
-    model.def_support('N2', True, True, True, False, False, False)
+    model.def_support('N1', True, True, True, True, False, False)
+    model.def_support('N2', False, True, True, False, False, False)
+    
+    model.add_load_combo('LC1', {"D": 1.25, "L": 1.5})
     
     # Add a point load at the specified position
-    model.add_member_pt_load('M1', 'Fy', load, load_position)
-
-    # Analyze the model
-    model.analyze()
-
+    model.add_member_pt_load(Member='M1', Direction='Fy', P=load, x=load_position,case="D")
+    model.analyze(check_statics=True)
+        
     return model
+    
 
 def plot_bending_moment(model):
     """
-    Plot the bending moment diagram of the beam.
+    Plot the bending moment diagram of the beam using matplotlib.
 
     Parameters:
     model (FEModel3D): The finite element model of the beam.
     """
-    Visualization.RenderModel(model, deformed_shape=True, deformed_scale=100, render_loads=True)
-
-# Add unit tests using pytest
-#def test_create_beam():
-#    length = 10  # Example length in meters
-#    load = 1000  # Example load in Newtons
-#    load_position = 5  # Example load position in meters from the left support
-
-#    model = create_beam(length, load, load_position)
+    # Retrieve bending moments from the analyzed model
+    node1 = model.Nodes['N1']
+    node2 = model.Nodes['N2']
     
- #   assert len(model.Nodes) == 2
- #   assert len(model.Members) == 1
- #   assert model.Nodes['N1'].X == 0
- #   assert model.Nodes['N2'].X == length
+    # Get the bending moment values at each node
+    moments1 = node1.Beam2D["Mx"][-1]
+    moments2 = node2.Beam2D["Mx"][0]
+    
+    # Combine into a single list for plotting
+    distances = [0, node1.X, node2.X]
+    bending_moments = [0, moments1, moments2]
 
-# You can add more tests to check for the correct reactions, displacements, etc.
+    # Plotting the bending moment diagram
+    plt.figure(figsize=(10, 6))
+    plt.plot(distances, bending_moments, marker='o', linestyle='-', color='b')
+    plt.xlabel('Distance (m)')
+    plt.ylabel('Bending Moment (Nm)')
+    plt.title('Bending Moment Diagram')
+    plt.grid(True)
+    plt.show()
