@@ -24,5 +24,5 @@ def calculate_beam_deflection(length, load, youngs_modulus, moment_of_inertia):
     model.Analyze()
 
     # Get deflection results
-    deflections = [model.Nodes('N1').DY, model.Nodes('N2').DY]
+    deflections = [model.Nodes['N1'].DY, model.Nodes['N2'].DY]
     return deflections
