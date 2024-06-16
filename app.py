@@ -1,6 +1,7 @@
 import streamlit as st
 from app_module import calculate_beam_deflection
 import matplotlib.pyplot as plt
+import numpy as np
 
 st.title("Beam Deflection Calculator")
 
