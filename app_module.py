@@ -1,6 +1,6 @@
 import numpy as np
 #from PyNite import FEModel3D, Beam3D
-from PyNite.FEModel3D import FEModel3D
+from PyNite import FEModel3D
 
 def calculate_beam_deflection(length, load, youngs_modulus, moment_of_inertia):
     # Create a new finite element model
