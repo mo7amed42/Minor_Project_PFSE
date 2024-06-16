@@ -13,7 +13,11 @@ def create_beam(length, load, load_position):
     Returns:
     model (FEModel3D): The finite element model of the beam.
     """
-
+    # Ensure inputs are numeric
+    length = float(length)
+    load = float(load)
+    load_position = float(load_position)
+    
     # Define material properties and section properties
     E = 210e9      # Young's modulus in Pascals (N/m^2)
     nu = 0.3       # Poisson's ratio
