@@ -1,1 +1,3 @@
 pfse_starterkit
+numpy
+matplotlib

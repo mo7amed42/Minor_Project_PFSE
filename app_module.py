@@ -1,5 +1,6 @@
+# app_module.py
+
 import streamlit as st
-import matplotlib.pyplot as plt
 from app import create_beam, plot_bending_moment
 
 # Title and description
@@ -21,9 +22,9 @@ if st.button("Run Analysis"):
 
         # Plot bending moment diagram
         fig, ax = plt.subplots()
-        plot_bending_moment(model)
-        st.pyplot(fig)
-    
+        plot = plot_bending_moment(model)
+        st.pyplot(plot)
+
     st.success("Analysis complete!")
 
-# To run this app, use the command `streamlit run app.py` in your terminal.
+# To run this app, use the command `streamlit run app_module.py` in your terminal.

@@ -60,17 +60,13 @@ def plot_bending_moment(model):
     Parameters:
     model (FEModel3D): The finite element model of the beam.
     """
-    # Retrieve bending moments from the analyzed model
-    node1 = model.Nodes['N1']
-    node2 = model.Nodes['N2']
-    
-    # Get the bending moment values at each node
-    moments1 = node1.Beam2D["Mx"][-1]
-    moments2 = node2.Beam2D["Mx"][0]
-    
-    # Combine into a single list for plotting
-    distances = [0, node1.X, node2.X]
-    bending_moments = [0, moments1, moments2]
+    # Get bending moments along the beam member
+    member = model.Members['M1']
+    moments = member.plot_moment(Direction="Mz", combo_name='LC1', n_points=100)
+
+    # Extract distances and bending moments for plotting
+    distances = [point[0] for point in moments]
+    bending_moments = [point[1] for point in moments]
 
     # Plotting the bending moment diagram
     plt.figure(figsize=(10, 6))
@@ -79,4 +75,6 @@ def plot_bending_moment(model):
     plt.ylabel('Bending Moment (Nm)')
     plt.title('Bending Moment Diagram')
     plt.grid(True)
-    plt.show()
+    plt.tight_layout()
+
+    return plt
