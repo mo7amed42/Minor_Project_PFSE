@@ -1,7 +1,7 @@
 # app.py
 
 import streamlit as st
-import numpy as np
+#import numpy as np
 import matplotlib.pyplot as plt
 from app_module import create_beam_model, analyze_beam
 
